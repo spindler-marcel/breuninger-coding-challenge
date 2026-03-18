@@ -1,5 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:coding_challenge/core/feed_margins.dart';
+import 'package:coding_challenge/presentation/feed_margins.dart';
 import 'package:coding_challenge/data/models/feed_models.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -58,7 +58,7 @@ class SliderSubItemPage extends StatelessWidget {
                 padding: const EdgeInsets.all(12),
                 child: subItem.headline != null
                     ? Text(
-                        subItem.headline!,
+                        subItem.headline!.toUpperCase(),
                         style: Theme.of(context).textTheme.headlineMedium!.copyWith(color: Colors.white),
                       )
                     : const SizedBox.shrink(),

@@ -1,6 +1,6 @@
 import 'package:coding_challenge/core/app_theme.dart';
 import 'package:coding_challenge/injection_container.dart';
-import 'package:coding_challenge/presentation/pages/feed_page.dart';
+import 'package:coding_challenge/presentation/feed_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:coding_challenge/l10n/app_localizations.dart';

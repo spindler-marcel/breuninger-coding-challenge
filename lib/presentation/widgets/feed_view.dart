@@ -1,9 +1,12 @@
 import 'package:coding_challenge/application/feed_cubit/feed_cubit.dart';
 import 'package:coding_challenge/core/failures/app_failure_mapper.dart';
+import 'package:coding_challenge/presentation/responsive_breakpoints.dart';
 import 'package:coding_challenge/l10n/app_localizations.dart';
+import 'package:coding_challenge/presentation/widgets/feed_grid.dart';
 import 'package:coding_challenge/presentation/widgets/feed_list.dart';
-import 'package:coding_challenge/presentation/widgets/gender_filter_bar.dart';
-import 'package:coding_challenge/presentation/widgets/source_toggle.dart';
+import 'package:coding_challenge/presentation/widgets/feed_controls/gender_filter_bar.dart';
+import 'package:coding_challenge/presentation/widgets/reloading_indicator.dart';
+import 'package:coding_challenge/presentation/widgets/feed_controls/source_toggle.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -13,6 +16,9 @@ class FeedView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
+    final isTablet =
+        MediaQuery.sizeOf(context).width >= ResponsiveBreakpoints.tablet;
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
@@ -20,29 +26,32 @@ class FeedView extends StatelessWidget {
           style: Theme.of(context).textTheme.headlineLarge,
         ),
         actions: [
-          BlocBuilder<FeedCubit, FeedState>(
-            buildWhen: (prev, curr) =>
-                (prev is FeedReloadingState && !prev.isPullToRefresh) !=
-                (curr is FeedReloadingState && !curr.isPullToRefresh),
-            builder: (context, state) {
-              final isReloading =
-                  state is FeedReloadingState && !state.isPullToRefresh;
-              return Padding(
-                padding: const EdgeInsets.only(right: 16),
-                child: isReloading
-                    ? const SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const SizedBox(width: 16),
-              );
-            },
-          ),
+          if (!isTablet)
+            const Padding(
+              padding: EdgeInsets.only(right: 16),
+              child: ReloadingIndicator(),
+            ),
         ],
-        bottom: const PreferredSize(
-          preferredSize: Size.fromHeight(96),
-          child: Column(children: [SourceToggle(), GenderFilterBar()]),
+        bottom: PreferredSize(
+          preferredSize: const Size.fromHeight(96),
+          child: Column(
+            children: [
+              if (isTablet)
+                Row(
+                  children: const [
+                    SizedBox(width: 40),
+                    Expanded(child: SourceToggle()),
+                    Padding(
+                      padding: EdgeInsets.only(right: 24),
+                      child: ReloadingIndicator(),
+                    ),
+                  ],
+                )
+              else
+                const SourceToggle(),
+              const GenderFilterBar(),
+            ],
+          ),
         ),
       ),
       body: BlocBuilder<FeedCubit, FeedState>(
@@ -54,10 +63,15 @@ class FeedView extends StatelessWidget {
             final items = state is FeedSuccessState
                 ? state.displayedItems
                 : (state as FeedReloadingState).displayedItems;
-            return FeedList(
-              items: items,
-              onRefresh: () => BlocProvider.of<FeedCubit>(context).refresh(),
-            );
+            Future<void> onRefresh() =>
+                BlocProvider.of<FeedCubit>(context).refresh();
+            return isTablet
+                ? FeedGrid(
+                    items: items,
+                    activeFilter: state.activeFilter,
+                    onRefresh: onRefresh,
+                  )
+                : FeedList(items: items, onRefresh: onRefresh);
           }
           if (state is FeedFailureState) {
             return Center(
@@ -95,7 +109,5 @@ class FeedView extends StatelessWidget {
   }
 }
 
-// TODO: GRID BEI TABLET
-// TODO: ORDNER STRUKTURIEREN
 // TODO: UNIT TESTS
 // TODO: WIDGET TESTS

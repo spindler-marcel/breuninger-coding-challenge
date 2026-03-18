@@ -1,5 +1,5 @@
 import 'package:coding_challenge/data/models/feed_models.dart';
-import 'package:coding_challenge/presentation/widgets/slider_page_view.dart';
+import 'package:coding_challenge/presentation/widgets/feed_items/slider_page_view.dart';
 import 'package:flutter/material.dart';
 
 class BrandSliderCard extends StatelessWidget {

@@ -1,5 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:coding_challenge/core/feed_margins.dart';
+import 'package:coding_challenge/presentation/feed_margins.dart';
 import 'package:coding_challenge/data/models/feed_models.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -32,7 +32,7 @@ class TeaserCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.all(12),
                 child: Text(
-                  teaser.headline!,
+                  teaser.headline!.toUpperCase(),
                   style: Theme.of(context).textTheme.headlineMedium,
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
