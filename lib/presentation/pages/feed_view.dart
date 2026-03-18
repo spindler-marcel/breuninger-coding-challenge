@@ -22,11 +22,11 @@ class FeedView extends StatelessWidget {
         actions: [
           BlocBuilder<FeedCubit, FeedState>(
             buildWhen: (prev, curr) =>
-                (prev is FeedSuccessState ? prev.isReloading : false) !=
-                (curr is FeedSuccessState ? curr.isReloading : false),
+                (prev is FeedReloadingState && !prev.isPullToRefresh) !=
+                (curr is FeedReloadingState && !curr.isPullToRefresh),
             builder: (context, state) {
               final isReloading =
-                  state is FeedSuccessState && state.isReloading;
+                  state is FeedReloadingState && !state.isPullToRefresh;
               return Padding(
                 padding: const EdgeInsets.only(right: 16),
                 child: isReloading
@@ -50,9 +50,12 @@ class FeedView extends StatelessWidget {
           if (state is FeedInitialLoadingState) {
             return const Center(child: CircularProgressIndicator());
           }
-          if (state is FeedSuccessState) {
+          if (state is FeedSuccessState || state is FeedReloadingState) {
+            final items = state is FeedSuccessState
+                ? state.displayedItems
+                : (state as FeedReloadingState).displayedItems;
             return FeedList(
-              items: state.displayedItems,
+              items: items,
               onRefresh: () => BlocProvider.of<FeedCubit>(context).refresh(),
             );
           }
@@ -92,7 +95,6 @@ class FeedView extends StatelessWidget {
   }
 }
 
-// TODO: PULL TO REFRESH ERNEUERT NUR SOURCE 1 UND SCHEINT NICHT RICHTIG ZU FUNKTIONIEREN
 // TODO: LOGIK AUS WIDGETS ENTFERNEN
 // TODO: GRID BEI TABLET
 // TODO: ORDNER STRUKTURIEREN

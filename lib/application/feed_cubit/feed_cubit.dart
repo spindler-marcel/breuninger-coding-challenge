@@ -19,38 +19,49 @@ class FeedCubit extends Cubit<FeedState> {
 
   Future<void> refresh() async {
     final currentState = state;
-    final (source, filter) = switch (currentState) {
-      FeedSuccessState s => (s.activeSource, s.activeFilter),
-      FeedFailureState s => (s.activeSource, s.activeFilter),
-      FeedInitialLoadingState s => (s.activeSource, s.activeFilter),
-      _ => (FeedSource.source1, GenderFilter.all),
-    };
+    final source = currentState.activeSource;
+    final filter = currentState.activeFilter;
     _repository.cancel();
     final requestId = ++_requestId;
-    if (currentState is FeedSuccessState) {
-      emit(currentState.copyWith(isReloading: true));
-    } else {
-      emit(FeedInitialLoadingState(activeSource: source, activeFilter: filter));
+    switch (currentState) {
+      case FeedSuccessState s:
+        emit(FeedReloadingState(
+          allItems: s.allItems, displayedItems: s.displayedItems,
+          activeSource: source, activeFilter: filter, isPullToRefresh: true,
+        ));
+      case FeedReloadingState s:
+        emit(FeedReloadingState(
+          allItems: s.allItems, displayedItems: s.displayedItems,
+          activeSource: source, activeFilter: filter, isPullToRefresh: true,
+        ));
+      default:
+        emit(FeedInitialLoadingState(activeSource: source, activeFilter: filter));
     }
     await _loadFeed(source: source, filter: filter, requestId: requestId);
   }
 
-  Future<void> switchSource(FeedSource source) async {
-    if (state case FeedSuccessState s when s.activeSource == source) return;
-
+  Future<void> switchSource(FeedSource newSource) async {
     final currentState = state;
-    final filter = currentState is FeedSuccessState
-        ? currentState.activeFilter
-        : GenderFilter.all;
+    if (currentState.activeSource == newSource) return;
+    final filter = currentState.activeFilter;
 
     _repository.cancel();
     final requestId = ++_requestId;
-    if (currentState is FeedSuccessState) {
-      emit(currentState.copyWith(activeSource: source, activeFilter: filter, isReloading: true));
-    } else {
-      emit(FeedInitialLoadingState(activeSource: source, activeFilter: filter));
+    switch (currentState) {
+      case FeedSuccessState s:
+        emit(FeedReloadingState(
+          allItems: s.allItems, displayedItems: s.displayedItems,
+          activeSource: newSource, activeFilter: filter, isPullToRefresh: false,
+        ));
+      case FeedReloadingState s:
+        emit(FeedReloadingState(
+          allItems: s.allItems, displayedItems: s.displayedItems,
+          activeSource: newSource, activeFilter: filter, isPullToRefresh: false,
+        ));
+      default:
+        emit(FeedInitialLoadingState(activeSource: newSource, activeFilter: filter));
     }
-    await _loadFeed(source: source, filter: filter, requestId: requestId);
+    await _loadFeed(source: newSource, filter: filter, requestId: requestId);
   }
 
   void filterByGender(GenderFilter filter) {

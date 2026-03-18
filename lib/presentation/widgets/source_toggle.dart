@@ -12,12 +12,7 @@ class SourceToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<FeedCubit, FeedState>(
       builder: (context, state) {
-        final activeSource = switch (state) {
-          FeedSuccessState s => s.activeSource,
-          FeedInitialLoadingState s => s.activeSource,
-          FeedFailureState s => s.activeSource,
-          _ => FeedSource.source1,
-        };
+        final activeSource = state.activeSource;
         final selectedIndex = FeedSource.values.indexOf(activeSource);
         final segmentCount = FeedSource.values.length;
 

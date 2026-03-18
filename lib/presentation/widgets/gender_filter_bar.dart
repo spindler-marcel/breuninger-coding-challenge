@@ -12,12 +12,7 @@ class GenderFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<FeedCubit, FeedState>(
       builder: (context, state) {
-        final activeFilter = switch (state) {
-          FeedSuccessState s => s.activeFilter,
-          FeedInitialLoadingState s => s.activeFilter,
-          FeedFailureState s => s.activeFilter,
-          _ => GenderFilter.all,
-        };
+        final activeFilter = state.activeFilter;
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
