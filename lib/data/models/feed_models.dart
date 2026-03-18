@@ -1,5 +1,5 @@
-import 'package:coding_challenge/core/exceptions.dart';
 import 'package:equatable/equatable.dart';
+import 'package:flutter/foundation.dart';
 
 sealed class FeedItem {
   const FeedItem();
@@ -14,7 +14,8 @@ sealed class FeedItem {
         'brand_slider' => BrandSliderModel.fromJson(json),
         _ => null,
       };
-    } catch (_) {
+    } catch (e) {
+      debugPrint('FeedItem.fromJson failed: $e — json: $json');
       return null;
     }
   }
@@ -38,18 +39,16 @@ class TeaserModel extends FeedItem with EquatableMixin {
     this.imageUrl,
   });
 
-  factory TeaserModel.fromJson(Map<String, dynamic> json) {
+  static TeaserModel? fromJson(Map<String, dynamic> json) {
     final attrs = json['attributes'] as Map<String, dynamic>;
     final url = attrs['url'] as String?;
-    if (url == null) {
-      throw const ParseException('Teaser is missing required field: url');
-    }
+    if (url == null) return null;
 
     return TeaserModel(
       id: json['id'] as int,
       url: url,
       gender: json['gender'] as String?,
-      expiresAt: DateTime.tryParse(json['expires_at'] as String? ?? ''),
+      expiresAt: json['expires_at'] is String ? DateTime.tryParse(json['expires_at'] as String) : null,
       headline: attrs['headline'] as String?,
       imageUrl: attrs['image_url'] as String?,
     );
@@ -130,7 +129,7 @@ class SliderSubItemModel with EquatableMixin {
       id: json['id'] as int,
       url: url,
       gender: json['gender'] as String?,
-      expiresAt: DateTime.tryParse(json['expires_at'] as String? ?? ''),
+      expiresAt: json['expires_at'] is String ? DateTime.tryParse(json['expires_at'] as String) : null,
       headline: json['headline'] as String?,
       imageUrl: json['image_url'] as String?,
     );

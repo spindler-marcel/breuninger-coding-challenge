@@ -1,0 +1,51 @@
+{
+  "@@locale": "de",
+  "feed_title": "Feed",
+  "@feed_title": {
+    "description": "Titel des Haupt-Feed-Screens in der App-Bar"
+  },
+  "feed_source_1": "Quelle 1",
+  "@feed_source_1": {
+    "description": "Bezeichnung für die erste Datenquelle im Source-Toggle"
+  },
+  "feed_source_2": "Quelle 2",
+  "@feed_source_2": {
+    "description": "Bezeichnung für die zweite Datenquelle im Source-Toggle"
+  },
+  "feed_filter_all": "Alle",
+  "@feed_filter_all": {
+    "description": "Filter-Chip-Label um alle Einträge anzuzeigen"
+  },
+  "feed_filter_male": "Männlich",
+  "@feed_filter_male": {
+    "description": "Filter-Chip-Label um nur männliche Einträge anzuzeigen"
+  },
+  "feed_filter_female": "Weiblich",
+  "@feed_filter_female": {
+    "description": "Filter-Chip-Label um nur weibliche Einträge anzuzeigen"
+  },
+  "feed_error_retry": "Erneut versuchen",
+  "@feed_error_retry": {
+    "description": "Button auf dem Fehler-Screen, um den Feed neu zu laden"
+  },
+  "failure_connection": "Keine Internetverbindung. Bitte überprüfe deine Verbindung und versuche es erneut.",
+  "@failure_connection": {
+    "description": "Fehlermeldung wenn keine Internetverbindung besteht"
+  },
+  "failure_server": "Bei uns ist etwas schiefgelaufen. Bitte versuche es später erneut.",
+  "@failure_server": {
+    "description": "Fehlermeldung wenn der Server einen 4xx oder 5xx Fehler zurückgibt"
+  },
+  "failure_timeout": "Die Anfrage hat zu lange gedauert. Bitte versuche es erneut.",
+  "@failure_timeout": {
+    "description": "Fehlermeldung wenn eine Netzwerkanfrage zu lange dauert"
+  },
+  "failure_parse": "Die Inhalte konnten nicht geladen werden. Bitte versuche es später erneut.",
+  "@failure_parse": {
+    "description": "Fehlermeldung wenn die Antwortdaten nicht verarbeitet werden konnten"
+  },
+  "failure_unknown": "Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es später erneut.",
+  "@failure_unknown": {
+    "description": "Fallback-Fehlermeldung für unerwartete Fehler"
+  }
+}

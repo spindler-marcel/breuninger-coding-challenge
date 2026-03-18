@@ -1,10 +1,10 @@
 import 'package:coding_challenge/core/constants.dart';
-import 'package:coding_challenge/core/exceptions.dart';
+import 'package:coding_challenge/core/failures/app_failure.dart';
 import 'package:coding_challenge/core/gender_filter.dart';
+import 'package:coding_challenge/core/result.dart';
 import 'package:coding_challenge/data/feed_filter.dart';
 import 'package:coding_challenge/data/models/feed_models.dart';
 import 'package:coding_challenge/data/repository/feed_repository.dart';
-import 'package:dio/dio.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -15,31 +15,42 @@ class FeedCubit extends Cubit<FeedState> {
 
   final FeedRepository _repository;
   final FeedFilter _filter = FeedFilter();
-  CancelToken? _cancelToken;
+  int _requestId = 0;
 
   Future<void> refresh() async {
-    FeedSource source = FeedSource.source1;
-    GenderFilter filter = GenderFilter.all;
-
     final currentState = state;
+    final (source, filter) = switch (currentState) {
+      FeedSuccessState s => (s.activeSource, s.activeFilter),
+      FeedFailureState s => (s.activeSource, s.activeFilter),
+      FeedInitialLoadingState s => (s.activeSource, s.activeFilter),
+      _ => (FeedSource.source1, GenderFilter.all),
+    };
+    _repository.cancel();
+    final requestId = ++_requestId;
     if (currentState is FeedSuccessState) {
-      source = currentState.activeSource;
-      filter = currentState.activeFilter;
+      emit(currentState.copyWith(isReloading: true));
+    } else {
+      emit(FeedInitialLoadingState(activeSource: source, activeFilter: filter));
     }
-
-    await _loadFeed(source: source, filter: filter);
+    await _loadFeed(source: source, filter: filter, requestId: requestId);
   }
 
   Future<void> switchSource(FeedSource source) async {
     if (state case FeedSuccessState s when s.activeSource == source) return;
 
-    GenderFilter filter = GenderFilter.all;
     final currentState = state;
-    if (currentState is FeedSuccessState) {
-      filter = currentState.activeFilter;
-    }
+    final filter = currentState is FeedSuccessState
+        ? currentState.activeFilter
+        : GenderFilter.all;
 
-    await _loadFeed(source: source, filter: filter);
+    _repository.cancel();
+    final requestId = ++_requestId;
+    if (currentState is FeedSuccessState) {
+      emit(currentState.copyWith(activeSource: source, activeFilter: filter, isReloading: true));
+    } else {
+      emit(FeedInitialLoadingState(activeSource: source, activeFilter: filter));
+    }
+    await _loadFeed(source: source, filter: filter, requestId: requestId);
   }
 
   void filterByGender(GenderFilter filter) {
@@ -56,77 +67,60 @@ class FeedCubit extends Cubit<FeedState> {
   Future<void> _loadFeed({
     required FeedSource source,
     required GenderFilter filter,
+    required int requestId,
   }) async {
-    _cancelToken?.cancel('Superseded');
-    _cancelToken = CancelToken();
-    final token = _cancelToken!;
+    final feedResult = await _repository.getFeed(source: source);
 
-    if (state is! FeedSuccessState) emit(FeedLoadingState());
+    if (requestId != _requestId) return;
 
-    try {
-      final items = await _repository.getFeed(
-        source: source,
-        cancelToken: token,
-      );
-      emit(FeedSuccessState(
-        allItems: items,
-        displayedItems: _filter.apply(items, filter),
-        activeSource: source,
-        activeFilter: filter,
-      ));
+    switch (feedResult) {
+      case Cancelled():
+        return;
+      case Failure(:final failure):
+        emit(FeedFailureState(failure: failure, activeSource: source, activeFilter: filter));
+        return;
+      case Success(:final value):
+        final feedItems = value;
+        _emitSuccess(feedItems, source: source, filter: filter);
 
-      final brandSlider = items.whereType<BrandSliderModel>().firstOrNull;
-      if (brandSlider != null) {
-        try {
-          final subItems = await _repository.loadBrandItems(
-            itemsUrl: brandSlider.itemsUrl,
-            cancelToken: token,
-          );
-          final updatedItems = items
-              .map((item) => item.id == brandSlider.id
-                  ? brandSlider.copyWithSubItems(subItems)
-                  : item)
-              .toList();
-          emit(FeedSuccessState(
-            allItems: updatedItems,
-            displayedItems: _filter.apply(updatedItems, filter),
-            activeSource: source,
-            activeFilter: filter,
-          ));
-        } on DioException catch (e) {
-          if (CancelToken.isCancel(e)) return;
-          // Remove brand slider from feed on error
-          final withoutBrand = items.where((item) => item.id != brandSlider.id).toList();
-          emit(FeedSuccessState(
-            allItems: withoutBrand,
-            displayedItems: _filter.apply(withoutBrand, filter),
-            activeSource: source,
-            activeFilter: filter,
-          ));
-        } catch (_) {
-          // Remove brand slider from feed on error
-          final withoutBrand = items.where((item) => item.id != brandSlider.id).toList();
-          emit(FeedSuccessState(
-            allItems: withoutBrand,
-            displayedItems: _filter.apply(withoutBrand, filter),
-            activeSource: source,
-            activeFilter: filter,
-          ));
+        final brandSlider = feedItems.whereType<BrandSliderModel>().firstOrNull;
+        if (brandSlider == null) return;
+
+        final brandResult = await _repository.loadBrandItems(itemsUrl: brandSlider.itemsUrl);
+
+        switch (brandResult) {
+          case Cancelled():
+            return;
+          case Failure():
+            final withoutBrand = feedItems.where((item) => item.id != brandSlider.id).toList();
+            _emitSuccess(withoutBrand, source: source, filter: filter);
+          case Success(:final value):
+            final updatedItems = feedItems
+                .map((item) => item.id == brandSlider.id
+                    ? brandSlider.copyWithSubItems(value)
+                    : item)
+                .toList();
+            _emitSuccess(updatedItems, source: source, filter: filter);
         }
-      }
-    } on DioException catch (e) {
-      if (CancelToken.isCancel(e)) return;
-      emit(FeedFailureState('Network error. Pull to refresh.'));
-    } on NetworkException {
-      emit(FeedFailureState('Network error. Pull to refresh.'));
-    } catch (_) {
-      emit(FeedFailureState('Something went wrong. Pull to refresh.'));
     }
+  }
+
+  void _emitSuccess(
+    List<FeedItem> items, {
+    required FeedSource source,
+    required GenderFilter filter,
+  }) {
+    emit(FeedSuccessState(
+      allItems: items,
+      displayedItems: _filter.apply(items, filter),
+      activeSource: source,
+      activeFilter: filter,
+    ));
   }
 
   @override
   Future<void> close() {
-    _cancelToken?.cancel('Cubit closed');
+    _repository.cancel();
     return super.close();
   }
 }

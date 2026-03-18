@@ -1,5 +1,7 @@
 import 'package:coding_challenge/core/gender_filter.dart';
+import 'package:coding_challenge/core/extensions/gender_filter_l10n.dart';
 import 'package:coding_challenge/application/feed_cubit/feed_cubit.dart';
+import 'package:coding_challenge/l10n/app_localizations.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
@@ -10,8 +12,12 @@ class GenderFilterBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<FeedCubit, FeedState>(
       builder: (context, state) {
-        final activeFilter =
-            state is FeedSuccessState ? state.activeFilter : GenderFilter.all;
+        final activeFilter = switch (state) {
+          FeedSuccessState s => s.activeFilter,
+          FeedInitialLoadingState s => s.activeFilter,
+          FeedFailureState s => s.activeFilter,
+          _ => GenderFilter.all,
+        };
 
         return Padding(
           padding: const EdgeInsets.symmetric(vertical: 8),
@@ -22,10 +28,10 @@ class GenderFilterBar extends StatelessWidget {
                   (filter) => Padding(
                     padding: const EdgeInsets.symmetric(horizontal: 4),
                     child: ChoiceChip(
-                      label: Text(filter.name.toUpperCase()),
+                      label: Text(filter.label(AppLocalizations.of(context)!)),
                       selected: activeFilter == filter,
                       onSelected: (_) =>
-                          context.read<FeedCubit>().filterByGender(filter),
+                          BlocProvider.of<FeedCubit>(context).filterByGender(filter),
                     ),
                   ),
                 )

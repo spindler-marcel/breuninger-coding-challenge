@@ -1,1 +1,5 @@
-enum GenderFilter { all, male, female }
+enum GenderFilter {
+  all,
+  male,
+  female;
+}

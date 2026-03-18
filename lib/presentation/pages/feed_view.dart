@@ -1,4 +1,6 @@
 import 'package:coding_challenge/application/feed_cubit/feed_cubit.dart';
+import 'package:coding_challenge/core/failures/app_failure_mapper.dart';
+import 'package:coding_challenge/l10n/app_localizations.dart';
 import 'package:coding_challenge/presentation/widgets/feed_list.dart';
 import 'package:coding_challenge/presentation/widgets/gender_filter_bar.dart';
 import 'package:coding_challenge/presentation/widgets/source_toggle.dart';
@@ -10,46 +12,76 @@ class FeedView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Feed'),
+        title: Text(
+          l10n.feed_title,
+          style: Theme.of(context).textTheme.headlineLarge,
+        ),
+        actions: [
+          BlocBuilder<FeedCubit, FeedState>(
+            buildWhen: (prev, curr) =>
+                (prev is FeedSuccessState ? prev.isReloading : false) !=
+                (curr is FeedSuccessState ? curr.isReloading : false),
+            builder: (context, state) {
+              final isReloading =
+                  state is FeedSuccessState && state.isReloading;
+              return Padding(
+                padding: const EdgeInsets.only(right: 16),
+                child: isReloading
+                    ? const SizedBox(
+                        width: 16,
+                        height: 16,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : const SizedBox(width: 16),
+              );
+            },
+          ),
+        ],
         bottom: const PreferredSize(
           preferredSize: Size.fromHeight(96),
           child: Column(children: [SourceToggle(), GenderFilterBar()]),
         ),
       ),
-      body: BlocConsumer<FeedCubit, FeedState>(
-        listener: (context, state) {
-          if (state is FeedFailureState) {
-            ScaffoldMessenger.of(
-              context,
-            ).showSnackBar(SnackBar(content: Text(state.message)));
-          }
-        },
+      body: BlocBuilder<FeedCubit, FeedState>(
         builder: (context, state) {
-          if (state is FeedLoadingState) {
+          if (state is FeedInitialLoadingState) {
             return const Center(child: CircularProgressIndicator());
           }
           if (state is FeedSuccessState) {
-            return RefreshIndicator(
-              onRefresh: () => context.read<FeedCubit>().refresh(),
-              child: FeedList(items: state.displayedItems),
+            return FeedList(
+              items: state.displayedItems,
+              onRefresh: () => BlocProvider.of<FeedCubit>(context).refresh(),
             );
           }
           if (state is FeedFailureState) {
             return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.error_outline, size: 48),
-                  const SizedBox(height: 16),
-                  Text(state.message),
-                  const SizedBox(height: 16),
-                  FilledButton(
-                    onPressed: () => context.read<FeedCubit>().refresh(),
-                    child: const Text('Retry'),
-                  ),
-                ],
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      size: 48,
+                      color: Theme.of(context).colorScheme.primary,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      AppFailureMapper.map(state.failure, l10n),
+                      style: Theme.of(context).textTheme.bodyLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    FilledButton(
+                      onPressed: () =>
+                          BlocProvider.of<FeedCubit>(context).refresh(),
+                      child: Text(l10n.feed_error_retry),
+                    ),
+                  ],
+                ),
               ),
             );
           }
@@ -60,11 +92,10 @@ class FeedView extends StatelessWidget {
   }
 }
 
-// TODO: WECHSEL ANIMATION SELTSAM
-// TODO: SLIDER SOLL INDICATOR FÜR MENGE DER ELEMENTE HABEN UND NÄCHSTES ELEMENT SOLL ETWAS SICHTBAR SEIN
-// TODO: THEME
-// TODO: LOCALIZATION
-// TODO: DESIGN ERSTELLEN LASSEN UXPILOT. CLAUDE SOLL PROMPT SCHREIBEN
-// TODO: ANIMATIONEN
+// TODO: PULL TO REFRESH ERNEUERT NUR SOURCE 1 UND SCHEINT NICHT RICHTIG ZU FUNKTIONIEREN
+// TODO: LOGIK AUS WIDGETS ENTFERNEN
+// TODO: GRID BEI TABLET
+// TODO: ORDNER STRUKTURIEREN
+// TODO: TEST MIT LANGSAMEN INTERNET
 // TODO: UNIT TESTS
 // TODO: WIDGET TESTS

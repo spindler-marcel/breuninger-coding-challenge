@@ -1,0 +1,51 @@
+{
+  "@@locale": "en",
+  "feed_title": "Feed",
+  "@feed_title": {
+    "description": "Title of the main feed screen in the app bar"
+  },
+  "feed_source_1": "Source 1",
+  "@feed_source_1": {
+    "description": "Label for the first data source in the source toggle"
+  },
+  "feed_source_2": "Source 2",
+  "@feed_source_2": {
+    "description": "Label for the second data source in the source toggle"
+  },
+  "feed_filter_all": "All",
+  "@feed_filter_all": {
+    "description": "Gender filter chip label to show all items"
+  },
+  "feed_filter_male": "Male",
+  "@feed_filter_male": {
+    "description": "Gender filter chip label to show male items only"
+  },
+  "feed_filter_female": "Female",
+  "@feed_filter_female": {
+    "description": "Gender filter chip label to show female items only"
+  },
+  "feed_error_retry": "Retry",
+  "@feed_error_retry": {
+    "description": "Button shown on the error screen to reload the feed"
+  },
+  "failure_connection": "No internet connection. Please check your connection and try again.",
+  "@failure_connection": {
+    "description": "Error message when the device has no internet connection"
+  },
+  "failure_server": "Something went wrong on our end. Please try again later.",
+  "@failure_server": {
+    "description": "Error message when the server returns a 4xx or 5xx response"
+  },
+  "failure_timeout": "The connection timed out. Please try again.",
+  "@failure_timeout": {
+    "description": "Error message when a network request times out"
+  },
+  "failure_parse": "We couldn't load the content. Please try again later.",
+  "@failure_parse": {
+    "description": "Error message when response data cannot be parsed"
+  },
+  "failure_unknown": "An unexpected error occurred. Please try again later.",
+  "@failure_unknown": {
+    "description": "Fallback error message for unexpected errors"
+  }
+}
