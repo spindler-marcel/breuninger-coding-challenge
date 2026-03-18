@@ -45,12 +45,10 @@ class _FeedListState extends State<FeedList> {
       return;
     }
 
-    // Build id→index map once for O(1) lookup instead of O(n) indexWhere per item
     final idToIndex = <int, int>{
       for (var i = 0; i < _currentItems.length; i++) _currentItems[i].id: i,
     };
 
-    // Sort descending so removing higher indices first keeps lower indices stable
     final indicesToRemove = changes.removed
         .map((id) => idToIndex[id])
         .whereType<int>()
@@ -71,25 +69,24 @@ class _FeedListState extends State<FeedList> {
       return;
     }
 
-    // Use Set for O(1) contains check
     final addedIds = changes.added.toSet();
 
-    void insertItems() {
-      if (!mounted) return;
-      for (var i = 0; i < newItems.length; i++) {
-        final item = newItems[i];
-        if (!addedIds.contains(item.id)) continue;
-        _currentItems.insert(i, item);
-        _listKey.currentState?.insertItem(i, duration: duration);
-      }
-      _currentItems = List.of(newItems);
-    }
-
     if (changes.removed.isEmpty) {
-      insertItems();
+      _insertItems(newItems, addedIds, duration);
     } else {
-      Future.delayed(duration, insertItems);
+      Future.delayed(duration, () => _insertItems(newItems, addedIds, duration));
     }
+  }
+
+  void _insertItems(List<FeedItem> newItems, Set<int> addedIds, Duration duration) {
+    if (!mounted) return;
+    for (var i = 0; i < newItems.length; i++) {
+      final item = newItems[i];
+      if (!addedIds.contains(item.id)) continue;
+      _currentItems.insert(i, item);
+      _listKey.currentState?.insertItem(i, duration: duration);
+    }
+    _currentItems = List.of(newItems);
   }
 
   @override
