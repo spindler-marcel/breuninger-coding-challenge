@@ -1,5 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:coding_challenge/presentation/feed_margins.dart';
+import 'package:coding_challenge/presentation/feed_dimensions.dart';
 import 'package:coding_challenge/data/models/feed_models.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -24,7 +24,7 @@ class SliderSubItemPage extends StatelessWidget {
       onTap: () => launchUrl(Uri.parse(subItem.url)),
       child: Card(
         clipBehavior: Clip.antiAlias,
-        margin: const EdgeInsets.symmetric(horizontal: FeedMargins.sliderSubItemHorizontal),
+        margin: const EdgeInsets.symmetric(horizontal: FeedDimensions.sliderSubItemHorizontalMargin),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -41,7 +41,7 @@ class SliderSubItemPage extends StatelessWidget {
                 );
               },
               child: CachedNetworkImage(
-                  imageUrl: subItem.imageUrl ?? '',
+                  imageUrl: subItem.imageUrl ?? "",
                   fit: BoxFit.cover,
                   placeholder: (context, url) =>
                       const Center(child: CircularProgressIndicator()),

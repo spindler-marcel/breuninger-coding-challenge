@@ -1,5 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:coding_challenge/presentation/feed_margins.dart';
+import 'package:coding_challenge/presentation/feed_dimensions.dart';
 import 'package:coding_challenge/data/models/feed_models.dart';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -15,12 +15,12 @@ class TeaserCard extends StatelessWidget {
       onTap: () => launchUrl(Uri.parse(teaser.url)),
       child: Card(
         clipBehavior: Clip.antiAlias,
-        margin: const EdgeInsets.symmetric(horizontal: FeedMargins.horizontal, vertical: FeedMargins.vertical),
+        margin: const EdgeInsets.symmetric(horizontal: FeedDimensions.horizontalMargin, vertical: FeedDimensions.verticalMargin),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             CachedNetworkImage(
-              imageUrl: teaser.imageUrl ?? '',
+              imageUrl: teaser.imageUrl ?? "",
               height: 200,
               fit: BoxFit.cover,
               placeholder: (context, url) =>

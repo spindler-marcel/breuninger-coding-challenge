@@ -11,6 +11,7 @@ class SourceToggle extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FeedCubit, FeedState>(
+      buildWhen: (prev, curr) => prev.activeSource != curr.activeSource,
       builder: (context, state) {
         final activeSource = state.activeSource;
         final selectedIndex = FeedSource.values.indexOf(activeSource);

@@ -1,7 +1,7 @@
 import 'package:coding_challenge/core/gender_filter.dart';
 import 'package:coding_challenge/data/models/feed_models.dart';
 import 'package:coding_challenge/presentation/widgets/adaptive_refresh_scroll_view.dart';
-import 'package:coding_challenge/presentation/widgets/feed_items/animated_feed_grid_item.dart';
+import 'package:coding_challenge/presentation/widgets/feed_items/animated_feed_item.dart';
 import 'package:coding_challenge/presentation/widgets/feed_items/feed_animation_mixin.dart';
 import 'package:flutter/material.dart';
 
@@ -88,7 +88,7 @@ class _FeedGridState extends State<FeedGrid>
 
   @override
   Widget buildRemovedItem(FeedItem item, Animation<double> animation) {
-    return AnimatedFeedGridItem(item: item, animation: animation);
+    return AnimatedFeedItem(item: item, animation: animation);
   }
 
   @override
@@ -109,7 +109,7 @@ class _FeedGridState extends State<FeedGrid>
                 mainAxisExtent: 290,
               ),
               initialItemCount: currentItems.length,
-              itemBuilder: (context, index, animation) => AnimatedFeedGridItem(
+              itemBuilder: (context, index, animation) => AnimatedFeedItem(
                 item: currentItems[index],
                 animation: animation,
               ),

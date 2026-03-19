@@ -108,6 +108,3 @@ class FeedView extends StatelessWidget {
     );
   }
 }
-
-// TODO: UNIT TESTS
-// TODO: WIDGET TESTS

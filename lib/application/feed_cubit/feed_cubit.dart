@@ -94,24 +94,28 @@ class FeedCubit extends Cubit<FeedState> {
         final feedItems = value;
         _emitSuccess(feedItems, source: source, filter: filter);
 
-        final brandSlider = feedItems.whereType<BrandSliderModel>().firstOrNull;
-        if (brandSlider == null) return;
+        final brandSliders = feedItems.whereType<BrandSliderModel>().toList();
+        if (brandSliders.isEmpty) return;
 
-        final brandResult = await _repository.loadBrandItems(itemsUrl: brandSlider.itemsUrl);
+        var currentItems = feedItems;
+        for (final brandSlider in brandSliders) {
+          final brandResult = await _repository.loadBrandItems(itemsUrl: brandSlider.itemsUrl);
 
-        switch (brandResult) {
-          case Cancelled():
-            return;
-          case Failure():
-            final withoutBrand = feedItems.where((item) => item.id != brandSlider.id).toList();
-            _emitSuccess(withoutBrand, source: source, filter: filter);
-          case Success(:final value):
-            final updatedItems = feedItems
-                .map((item) => item.id == brandSlider.id
-                    ? brandSlider.copyWithSubItems(value)
-                    : item)
-                .toList();
-            _emitSuccess(updatedItems, source: source, filter: filter);
+          switch (brandResult) {
+            case Cancelled():
+              return;
+            case Failure():
+            case Success(value: []):
+              currentItems = currentItems.where((item) => item.id != brandSlider.id).toList();
+              _emitSuccess(currentItems, source: source, filter: filter);
+            case Success(:final value):
+              currentItems = currentItems
+                  .map((item) => item.id == brandSlider.id
+                      ? brandSlider.copyWithSubItems(value)
+                      : item)
+                  .toList();
+              _emitSuccess(currentItems, source: source, filter: filter);
+          }
         }
     }
   }

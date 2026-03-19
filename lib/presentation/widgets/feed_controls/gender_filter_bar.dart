@@ -11,6 +11,7 @@ class GenderFilterBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<FeedCubit, FeedState>(
+      buildWhen: (prev, curr) => prev.activeFilter != curr.activeFilter,
       builder: (context, state) {
         final activeFilter = state.activeFilter;
 

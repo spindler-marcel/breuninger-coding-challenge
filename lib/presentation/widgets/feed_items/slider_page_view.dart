@@ -1,4 +1,4 @@
-import 'package:coding_challenge/presentation/feed_margins.dart';
+import 'package:coding_challenge/presentation/feed_dimensions.dart';
 import 'package:coding_challenge/data/models/feed_models.dart';
 import 'package:coding_challenge/presentation/widgets/feed_items/slider_sub_item_page.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +13,7 @@ class SliderPageView extends StatefulWidget {
 }
 
 class _SliderPageViewState extends State<SliderPageView> {
-  final _padEndsTarget = FeedMargins.horizontal - FeedMargins.sliderSubItemHorizontal;
+  final _padEndsTarget = FeedDimensions.horizontalMargin - FeedDimensions.sliderSubItemHorizontalMargin;
 
   PageController? _controller;
   int _currentPage = 0;
@@ -39,15 +39,15 @@ class _SliderPageViewState extends State<SliderPageView> {
     if (widget.subItems.isEmpty) return const SizedBox.shrink();
 
     final hasMultipleItems = widget.subItems.length > 1;
-    const dotsHeight = 16.0; // spacer (dotsHeight/2) + dots row (dotsHeight/2)
+    const dotsHeight = FeedDimensions.sliderDotsHeight;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: FeedMargins.vertical),
+      padding: const EdgeInsets.symmetric(vertical: FeedDimensions.verticalMargin),
       child: LayoutBuilder(
       builder: (context, constraints) {
         final totalHeight = constraints.hasBoundedHeight
             ? constraints.maxHeight
-            : (hasMultipleItems ? 264.0 : 240.0);
+            : (hasMultipleItems ? FeedDimensions.sliderHeightWithDots : FeedDimensions.sliderHeightWithoutDots);
         final pageViewHeight = totalHeight - (hasMultipleItems ? dotsHeight : 0);
 
         return SizedBox(

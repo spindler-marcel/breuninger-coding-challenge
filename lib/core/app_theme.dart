@@ -130,24 +130,6 @@ class AppTheme {
   static const ProgressIndicatorThemeData darkProgressIndicatorTheme =
       ProgressIndicatorThemeData(color: primaryColor);
 
-  static final SnackBarThemeData lightSnackBarTheme = SnackBarThemeData(
-    backgroundColor: lightTextColor,
-    contentTextStyle: bodyMediumText.copyWith(color: lightCardColor),
-    behavior: SnackBarBehavior.floating,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(8)),
-    ),
-  );
-
-  static final SnackBarThemeData darkSnackBarTheme = SnackBarThemeData(
-    backgroundColor: darkCardColor,
-    contentTextStyle: const TextStyle(color: darkTextColor, fontSize: 14),
-    behavior: SnackBarBehavior.floating,
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(8)),
-    ),
-  );
-
   static final ThemeData light = ThemeData(
     useMaterial3: true,
     colorScheme: const ColorScheme.light(
@@ -163,7 +145,6 @@ class AppTheme {
     cardTheme: lightCardTheme,
     chipTheme: lightChipTheme,
     progressIndicatorTheme: lightProgressIndicatorTheme,
-    snackBarTheme: lightSnackBarTheme,
   );
 
   static final ThemeData dark = ThemeData(
@@ -182,6 +163,5 @@ class AppTheme {
     cardTheme: darkCardTheme,
     chipTheme: darkChipTheme,
     progressIndicatorTheme: darkProgressIndicatorTheme,
-    snackBarTheme: darkSnackBarTheme,
   );
 }
