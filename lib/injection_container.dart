@@ -1,10 +1,13 @@
 import 'package:coding_challenge/data/repository/feed_repository.dart';
 import 'package:coding_challenge/data/repository/feed_repository_implementation.dart';
+import 'package:coding_challenge/data/repository/feed_repository_mock.dart';
 import 'package:coding_challenge/application/feed_cubit/feed_cubit.dart';
 import 'package:dio/dio.dart';
 import 'package:get_it/get_it.dart';
 
 final sl = GetIt.instance;
+
+const _useMock = false; // Set to true for performance testing with mock data
 
 void initDependencies() {
   sl.registerLazySingleton<Dio>(
@@ -15,7 +18,9 @@ void initDependencies() {
   );
 
   sl.registerLazySingleton<FeedRepository>(
-    () => FeedRepositoryImplementation(dio: sl<Dio>()),
+    () => _useMock
+        ? FeedRepositoryMock()
+        : FeedRepositoryImplementation(dio: sl<Dio>()),
   );
 
   sl.registerFactory<FeedCubit>(

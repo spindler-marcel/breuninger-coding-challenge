@@ -16,10 +16,15 @@ class AnimatedFeedItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOut,
+      reverseCurve: Curves.easeIn,
+    );
     return SizeTransition(
-      sizeFactor: animation,
+      sizeFactor: curved,
       child: FadeTransition(
-        opacity: animation,
+        opacity: curved,
         child: switch (item) {
           TeaserModel teaser => TeaserCard(teaser: teaser),
           SliderModel slider => SliderCard(slider: slider),
