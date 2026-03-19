@@ -10,24 +10,29 @@ void main() {
     feedFilter = FeedFilter();
   });
 
-  // ─── Helpers ───────────────────────────────────────────────────────────────
-
   TeaserModel teaser({required int id, String? gender}) =>
       TeaserModel(id: id, url: 'https://example.com/$id', gender: gender);
 
   SliderSubItemModel subItem({required int id, String? gender}) =>
-      SliderSubItemModel(id: id, url: 'https://example.com/$id', gender: gender);
+      SliderSubItemModel(
+        id: id,
+        url: 'https://example.com/$id',
+        gender: gender,
+      );
 
-  SliderModel slider({required int id, required List<SliderSubItemModel> items}) =>
-      SliderModel(id: id, subItems: items);
+  SliderModel slider({
+    required int id,
+    required List<SliderSubItemModel> items,
+  }) => SliderModel(id: id, subItems: items);
 
   BrandSliderModel brandSlider({
     required int id,
     List<SliderSubItemModel>? items,
-  }) =>
-      BrandSliderModel(id: id, itemsUrl: 'https://example.com/brands', subItems: items);
-
-  // ─── GenderFilter.all ──────────────────────────────────────────────────────
+  }) => BrandSliderModel(
+    id: id,
+    itemsUrl: 'https://example.com/brands',
+    subItems: items,
+  );
 
   group('GenderFilter.all', () {
     test('keeps all teasers regardless of gender', () {
@@ -55,7 +60,7 @@ void main() {
     });
 
     test('shows brand slider still loading (subItems == null)', () {
-      final items = [brandSlider(id: 1)]; // subItems null → still loading
+      final items = [brandSlider(id: 1)];
 
       final result = feedFilter.apply(items, GenderFilter.all);
 
@@ -71,14 +76,12 @@ void main() {
     });
   });
 
-  // ─── GenderFilter.male ─────────────────────────────────────────────────────
-
   group('GenderFilter.male', () {
     test('keeps male teasers', () {
       final items = [
         teaser(id: 1, gender: 'male'),
         teaser(id: 2, gender: 'female'),
-        teaser(id: 3), // no gender → filtered out
+        teaser(id: 3),
       ];
 
       final result = feedFilter.apply(items, GenderFilter.male);
@@ -89,10 +92,13 @@ void main() {
 
     test('keeps only male sub-items in slider', () {
       final items = [
-        slider(id: 1, items: [
-          subItem(id: 10, gender: 'male'),
-          subItem(id: 11, gender: 'female'),
-        ]),
+        slider(
+          id: 1,
+          items: [
+            subItem(id: 10, gender: 'male'),
+            subItem(id: 11, gender: 'female'),
+          ],
+        ),
       ];
 
       final result = feedFilter.apply(items, GenderFilter.male);
@@ -122,10 +128,13 @@ void main() {
 
     test('keeps only male sub-items in loaded brand slider', () {
       final items = [
-        brandSlider(id: 1, items: [
-          subItem(id: 10, gender: 'male'),
-          subItem(id: 11, gender: 'female'),
-        ]),
+        brandSlider(
+          id: 1,
+          items: [
+            subItem(id: 10, gender: 'male'),
+            subItem(id: 11, gender: 'female'),
+          ],
+        ),
       ];
 
       final result = feedFilter.apply(items, GenderFilter.male);
@@ -145,8 +154,6 @@ void main() {
     });
   });
 
-  // ─── GenderFilter.female ───────────────────────────────────────────────────
-
   group('GenderFilter.female', () {
     test('keeps female teasers', () {
       final items = [
@@ -161,8 +168,6 @@ void main() {
     });
   });
 
-  // ─── Mixed item types ──────────────────────────────────────────────────────
-
   group('mixed items', () {
     test('filters each item type independently', () {
       final items = <FeedItem>[
@@ -174,7 +179,7 @@ void main() {
 
       final result = feedFilter.apply(items, GenderFilter.male);
 
-      expect(result.length, 3); // teaser male, slider, brand slider loading
+      expect(result.length, 3);
     });
 
     test('returns empty list when all items are filtered out', () {

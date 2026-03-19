@@ -57,6 +57,13 @@ class _FeedGridState extends State<FeedGrid>
     }
   }
 
+  /// Fades the grid out, swaps all items, then fades back in.
+  /// [_pendingFadeItems] always holds the latest target list. If a new filter
+  /// arrives while the fade-out is still running, we skip starting another
+  /// reverse animation and just update the pending items — the in-progress
+  /// fade-out will pick up the latest list when it completes.
+  /// A new [GlobalKey] forces [SliverAnimatedGrid] to rebuild from scratch
+  /// with [initialItemCount], since all items are replaced at once.
   void _fadeTransition(List<FeedItem> newItems) {
     _pendingFadeItems = newItems;
     if (_fadeController.isAnimating && _fadeController.velocity < 0) return;

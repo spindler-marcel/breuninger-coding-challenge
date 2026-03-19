@@ -18,41 +18,48 @@ void main() {
     when(() => repository.cancel()).thenReturn(null);
   });
 
-  // ─── Helpers ───────────────────────────────────────────────────────────────
-
   TeaserModel teaser({required int id, String? gender}) =>
       TeaserModel(id: id, url: 'https://example.com/$id', gender: gender);
 
   SliderSubItemModel subItem({required int id, String? gender}) =>
-      SliderSubItemModel(id: id, url: 'https://example.com/$id', gender: gender);
+      SliderSubItemModel(
+        id: id,
+        url: 'https://example.com/$id',
+        gender: gender,
+      );
 
   BrandSliderModel brandSlider({required int id}) =>
       BrandSliderModel(id: id, itemsUrl: 'https://example.com/brands');
 
-  void stubFeedSuccess(List<FeedItem> items, {FeedSource source = FeedSource.source1}) {
-    when(() => repository.getFeed(source: source))
-        .thenAnswer((_) async => Success(items));
+  void stubFeedSuccess(
+    List<FeedItem> items, {
+    FeedSource source = FeedSource.source1,
+  }) {
+    when(
+      () => repository.getFeed(source: source),
+    ).thenAnswer((_) async => Success(items));
   }
 
-  void stubFeedFailure({AppFailure? failure, FeedSource source = FeedSource.source1}) {
-    when(() => repository.getFeed(source: source))
-        .thenAnswer((_) async => Failure(failure ?? ServerFailure()));
+  void stubFeedFailure({
+    AppFailure? failure,
+    FeedSource source = FeedSource.source1,
+  }) {
+    when(
+      () => repository.getFeed(source: source),
+    ).thenAnswer((_) async => Failure(failure ?? ServerFailure()));
   }
 
   void stubFeedCancelled({FeedSource source = FeedSource.source1}) {
-    when(() => repository.getFeed(source: source))
-        .thenAnswer((_) async => const Cancelled());
+    when(
+      () => repository.getFeed(source: source),
+    ).thenAnswer((_) async => const Cancelled());
   }
-
-  // ─── Initial state ─────────────────────────────────────────────────────────
 
   test('initial state is FeedInitialState', () {
     final cubit = FeedCubit(repository);
     expect(cubit.state, isA<FeedInitialState>());
     cubit.close();
   });
-
-  // ─── refresh ───────────────────────────────────────────────────────────────
 
   group('refresh', () {
     blocTest<FeedCubit, FeedState>(
@@ -64,8 +71,11 @@ void main() {
       act: (cubit) => cubit.refresh(),
       expect: () => [
         isA<FeedInitialLoadingState>(),
-        isA<FeedSuccessState>()
-            .having((s) => s.allItems.length, 'allItems.length', 2),
+        isA<FeedSuccessState>().having(
+          (s) => s.allItems.length,
+          'allItems.length',
+          2,
+        ),
       ],
     );
 
@@ -78,8 +88,11 @@ void main() {
       act: (cubit) => cubit.refresh(),
       expect: () => [
         isA<FeedInitialLoadingState>(),
-        isA<FeedFailureState>()
-            .having((s) => s.failure, 'failure', isA<ConnectionFailure>()),
+        isA<FeedFailureState>().having(
+          (s) => s.failure,
+          'failure',
+          isA<ConnectionFailure>(),
+        ),
       ],
     );
 
@@ -97,8 +110,11 @@ void main() {
       ),
       act: (cubit) => cubit.refresh(),
       expect: () => [
-        isA<FeedReloadingState>()
-            .having((s) => s.isPullToRefresh, 'isPullToRefresh', true),
+        isA<FeedReloadingState>().having(
+          (s) => s.isPullToRefresh,
+          'isPullToRefresh',
+          true,
+        ),
         isA<FeedSuccessState>(),
       ],
     );
@@ -120,7 +136,8 @@ void main() {
         return FeedCubit(repository);
       },
       act: (cubit) => cubit.refresh(),
-      verify: (_) => verify(() => repository.cancel()).called(greaterThanOrEqualTo(1)),
+      verify: (_) =>
+          verify(() => repository.cancel()).called(greaterThanOrEqualTo(1)),
     );
 
     blocTest<FeedCubit, FeedState>(
@@ -145,8 +162,6 @@ void main() {
     );
   });
 
-  // ─── switchSource ──────────────────────────────────────────────────────────
-
   group('switchSource', () {
     blocTest<FeedCubit, FeedState>(
       'emits nothing when switching to the same source',
@@ -163,10 +178,16 @@ void main() {
       },
       act: (cubit) => cubit.switchSource(FeedSource.source2),
       expect: () => [
-        isA<FeedInitialLoadingState>()
-            .having((s) => s.activeSource, 'activeSource', FeedSource.source2),
-        isA<FeedSuccessState>()
-            .having((s) => s.activeSource, 'activeSource', FeedSource.source2),
+        isA<FeedInitialLoadingState>().having(
+          (s) => s.activeSource,
+          'activeSource',
+          FeedSource.source2,
+        ),
+        isA<FeedSuccessState>().having(
+          (s) => s.activeSource,
+          'activeSource',
+          FeedSource.source2,
+        ),
       ],
     );
 
@@ -187,8 +208,11 @@ void main() {
         isA<FeedReloadingState>()
             .having((s) => s.activeSource, 'activeSource', FeedSource.source2)
             .having((s) => s.isPullToRefresh, 'isPullToRefresh', false),
-        isA<FeedSuccessState>()
-            .having((s) => s.activeSource, 'activeSource', FeedSource.source2),
+        isA<FeedSuccessState>().having(
+          (s) => s.activeSource,
+          'activeSource',
+          FeedSource.source2,
+        ),
       ],
     );
 
@@ -236,11 +260,10 @@ void main() {
         return FeedCubit(repository);
       },
       act: (cubit) => cubit.switchSource(FeedSource.source2),
-      verify: (_) => verify(() => repository.cancel()).called(greaterThanOrEqualTo(1)),
+      verify: (_) =>
+          verify(() => repository.cancel()).called(greaterThanOrEqualTo(1)),
     );
   });
-
-  // ─── filterByGender ────────────────────────────────────────────────────────
 
   group('filterByGender', () {
     blocTest<FeedCubit, FeedState>(
@@ -282,10 +305,13 @@ void main() {
       seed: () => FeedSuccessState(
         allItems: <FeedItem>[
           teaser(id: 1, gender: 'male'),
-          SliderModel(id: 2, subItems: [
-            subItem(id: 20, gender: 'male'),
-            subItem(id: 21, gender: 'female'),
-          ]),
+          SliderModel(
+            id: 2,
+            subItems: [
+              subItem(id: 20, gender: 'male'),
+              subItem(id: 21, gender: 'female'),
+            ],
+          ),
           BrandSliderModel(
             id: 3,
             itemsUrl: 'https://example.com/brands',
@@ -301,7 +327,7 @@ void main() {
         isA<FeedSuccessState>().having(
           (s) => s.displayedItems.length,
           'displayedItems.length',
-          2, // teaser male + slider with 1 male sub-item; brand slider has no male items → removed
+          2,
         ),
       ],
     );
@@ -327,17 +353,17 @@ void main() {
     );
   });
 
-  // ─── brand slider loading ──────────────────────────────────────────────────
-
   group('brand slider', () {
     blocTest<FeedCubit, FeedState>(
       'emits second Success with loaded sub-items after brand fetch',
       build: () {
         final brand = brandSlider(id: 5);
-        when(() => repository.getFeed(source: FeedSource.source1))
-            .thenAnswer((_) async => Success([brand]));
-        when(() => repository.loadBrandItems(itemsUrl: brand.itemsUrl))
-            .thenAnswer((_) async => Success([subItem(id: 50)]));
+        when(
+          () => repository.getFeed(source: FeedSource.source1),
+        ).thenAnswer((_) async => Success([brand]));
+        when(
+          () => repository.loadBrandItems(itemsUrl: brand.itemsUrl),
+        ).thenAnswer((_) async => Success([subItem(id: 50)]));
         return FeedCubit(repository);
       },
       act: (cubit) => cubit.refresh(),
@@ -360,17 +386,27 @@ void main() {
       'removes brand slider from list when brand fetch fails',
       build: () {
         final brand = brandSlider(id: 5);
-        when(() => repository.getFeed(source: FeedSource.source1))
-            .thenAnswer((_) async => Success([teaser(id: 1), brand]));
-        when(() => repository.loadBrandItems(itemsUrl: brand.itemsUrl))
-            .thenAnswer((_) async => Failure(ServerFailure()));
+        when(
+          () => repository.getFeed(source: FeedSource.source1),
+        ).thenAnswer((_) async => Success([teaser(id: 1), brand]));
+        when(
+          () => repository.loadBrandItems(itemsUrl: brand.itemsUrl),
+        ).thenAnswer((_) async => Failure(ServerFailure()));
         return FeedCubit(repository);
       },
       act: (cubit) => cubit.refresh(),
       expect: () => [
         isA<FeedInitialLoadingState>(),
-        isA<FeedSuccessState>().having((s) => s.allItems.length, 'with brand', 2),
-        isA<FeedSuccessState>().having((s) => s.allItems.length, 'without brand', 1),
+        isA<FeedSuccessState>().having(
+          (s) => s.allItems.length,
+          'with brand',
+          2,
+        ),
+        isA<FeedSuccessState>().having(
+          (s) => s.allItems.length,
+          'without brand',
+          1,
+        ),
       ],
     );
 
@@ -378,17 +414,27 @@ void main() {
       'removes brand slider from list when all sub-items fail to parse',
       build: () {
         final brand = brandSlider(id: 5);
-        when(() => repository.getFeed(source: FeedSource.source1))
-            .thenAnswer((_) async => Success([teaser(id: 1), brand]));
-        when(() => repository.loadBrandItems(itemsUrl: brand.itemsUrl))
-            .thenAnswer((_) async => const Success([]));
+        when(
+          () => repository.getFeed(source: FeedSource.source1),
+        ).thenAnswer((_) async => Success([teaser(id: 1), brand]));
+        when(
+          () => repository.loadBrandItems(itemsUrl: brand.itemsUrl),
+        ).thenAnswer((_) async => const Success([]));
         return FeedCubit(repository);
       },
       act: (cubit) => cubit.refresh(),
       expect: () => [
         isA<FeedInitialLoadingState>(),
-        isA<FeedSuccessState>().having((s) => s.allItems.length, 'with brand', 2),
-        isA<FeedSuccessState>().having((s) => s.allItems.length, 'without brand', 1),
+        isA<FeedSuccessState>().having(
+          (s) => s.allItems.length,
+          'with brand',
+          2,
+        ),
+        isA<FeedSuccessState>().having(
+          (s) => s.allItems.length,
+          'without brand',
+          1,
+        ),
       ],
     );
 
@@ -396,18 +442,16 @@ void main() {
       'emits nothing after brand fetch when request was cancelled',
       build: () {
         final brand = brandSlider(id: 5);
-        when(() => repository.getFeed(source: FeedSource.source1))
-            .thenAnswer((_) async => Success([brand]));
-        when(() => repository.loadBrandItems(itemsUrl: brand.itemsUrl))
-            .thenAnswer((_) async => const Cancelled());
+        when(
+          () => repository.getFeed(source: FeedSource.source1),
+        ).thenAnswer((_) async => Success([brand]));
+        when(
+          () => repository.loadBrandItems(itemsUrl: brand.itemsUrl),
+        ).thenAnswer((_) async => const Cancelled());
         return FeedCubit(repository);
       },
       act: (cubit) => cubit.refresh(),
-      expect: () => [
-        isA<FeedInitialLoadingState>(),
-        isA<FeedSuccessState>(), // initial success with brand (subItems null)
-        // no third state — Cancelled returns early
-      ],
+      expect: () => [isA<FeedInitialLoadingState>(), isA<FeedSuccessState>()],
     );
   });
 }

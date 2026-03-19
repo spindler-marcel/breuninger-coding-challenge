@@ -82,6 +82,8 @@ class FeedCubit extends Cubit<FeedState> {
   }) async {
     final feedResult = await _repository.getFeed(source: source);
 
+    // Guard against stale responses: if a newer request was started
+    // (e.g. source switched) while this one was in-flight, discard the result.
     if (requestId != _requestId) return;
 
     switch (feedResult) {
@@ -97,26 +99,32 @@ class FeedCubit extends Cubit<FeedState> {
         final brandSliders = feedItems.whereType<BrandSliderModel>().toList();
         if (brandSliders.isEmpty) return;
 
+        // Load all brand sliders in parallel. Dart's single-threaded event loop
+        // ensures updates to [currentItems] are always serialized — no concurrent
+        // write conflicts. Each result emits immediately for progressive UI updates.
         var currentItems = feedItems;
-        for (final brandSlider in brandSliders) {
-          final brandResult = await _repository.loadBrandItems(itemsUrl: brandSlider.itemsUrl);
+        await Future.wait(
+          brandSliders.map((brandSlider) async {
+            final brandResult = await _repository.loadBrandItems(itemsUrl: brandSlider.itemsUrl);
 
-          switch (brandResult) {
-            case Cancelled():
-              return;
-            case Failure():
-            case Success(value: []):
-              currentItems = currentItems.where((item) => item.id != brandSlider.id).toList();
-              _emitSuccess(currentItems, source: source, filter: filter);
-            case Success(:final value):
-              currentItems = currentItems
-                  .map((item) => item.id == brandSlider.id
-                      ? brandSlider.copyWithSubItems(value)
-                      : item)
-                  .toList();
-              _emitSuccess(currentItems, source: source, filter: filter);
-          }
-        }
+            switch (brandResult) {
+              case Cancelled():
+                return;
+              case Failure():
+              case Success(value: []):
+                // Remove the slider if loading failed or all sub-items were unparseable.
+                currentItems = currentItems.where((item) => item.id != brandSlider.id).toList();
+                _emitSuccess(currentItems, source: source, filter: filter);
+              case Success(:final value):
+                currentItems = currentItems
+                    .map((item) => item.id == brandSlider.id
+                        ? brandSlider.copyWithSubItems(value)
+                        : item)
+                    .toList();
+                _emitSuccess(currentItems, source: source, filter: filter);
+            }
+          }),
+        );
     }
   }
 

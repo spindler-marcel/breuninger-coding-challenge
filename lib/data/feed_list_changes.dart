@@ -1,5 +1,8 @@
 import 'package:coding_challenge/data/models/feed_models.dart';
 
+/// Detects which items were added or removed between two list snapshots.
+/// Uses set difference on item IDs — items with the same ID in both lists
+/// are considered unchanged and won't be animated.
 class FeedListChanges {
   const FeedListChanges({required this.added, required this.removed});
 

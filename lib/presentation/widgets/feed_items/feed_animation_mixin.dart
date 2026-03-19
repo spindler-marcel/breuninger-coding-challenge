@@ -19,6 +19,10 @@ mixin FeedAnimationMixin<T extends StatefulWidget> on State<T> {
 
   Widget buildRemovedItem(FeedItem item, Animation<double> animation);
 
+  /// Animates the diff between [currentItems] and [newItems].
+  /// Removals always happen before inserts so the list indices stay consistent.
+  /// When both removals and inserts occur, inserts are delayed by [duration]
+  /// to let the removal animation finish first before items slide in.
   void applyChanges(List<FeedItem> newItems) {
     const duration = Duration(milliseconds: 300);
 
@@ -36,11 +40,10 @@ mixin FeedAnimationMixin<T extends StatefulWidget> on State<T> {
       for (var i = 0; i < currentItems.length; i++) currentItems[i].id: i,
     };
 
-    final indicesToRemove = changes.removed
-        .map((id) => idToIndex[id])
-        .whereType<int>()
-        .toList()
-      ..sort((a, b) => b.compareTo(a));
+    // Remove in reverse index order to avoid index shifting during removal.
+    final indicesToRemove =
+        changes.removed.map((id) => idToIndex[id]).whereType<int>().toList()
+          ..sort((a, b) => b.compareTo(a));
 
     for (final index in indicesToRemove) {
       final removed = currentItems.removeAt(index);
@@ -61,11 +64,19 @@ mixin FeedAnimationMixin<T extends StatefulWidget> on State<T> {
     if (changes.removed.isEmpty) {
       _insertItems(newItems, addedIds, duration);
     } else {
-      Future.delayed(duration, () => _insertItems(newItems, addedIds, duration));
+      // Delay inserts until removals have finished animating.
+      Future.delayed(
+        duration,
+        () => _insertItems(newItems, addedIds, duration),
+      );
     }
   }
 
-  void _insertItems(List<FeedItem> newItems, Set<int> addedIds, Duration duration) {
+  void _insertItems(
+    List<FeedItem> newItems,
+    Set<int> addedIds,
+    Duration duration,
+  ) {
     if (!mounted) return;
     for (var i = 0; i < newItems.length; i++) {
       final item = newItems[i];

@@ -13,6 +13,9 @@ class SliderPageView extends StatefulWidget {
 }
 
 class _SliderPageViewState extends State<SliderPageView> {
+  // The visible padding on each side of the PageView. Derived from the
+  // difference between the feed's outer horizontal margin and the card's own
+  // horizontal margin, so the peeking cards align with the rest of the feed.
   final _padEndsTarget = FeedDimensions.horizontalMargin - FeedDimensions.sliderSubItemHorizontalMargin;
 
   PageController? _controller;
@@ -22,6 +25,8 @@ class _SliderPageViewState extends State<SliderPageView> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_controller == null) {
+      // viewportFraction < 1 makes adjacent pages peek in from the sides.
+      // Calculated so the visible padding matches [_padEndsTarget] on both sides.
       final vp = MediaQuery.sizeOf(context).width;
       final fraction = 1.0 - 2 * _padEndsTarget / vp;
       _controller = PageController(viewportFraction: fraction);
