@@ -1,11 +1,25 @@
 import 'package:flutter/material.dart';
 
+class AppGradients extends ThemeExtension<AppGradients> {
+  const AppGradients({required this.background});
+
+  final LinearGradient background;
+
+  @override
+  AppGradients copyWith({LinearGradient? background}) =>
+      AppGradients(background: background ?? this.background);
+
+  @override
+  AppGradients lerp(AppGradients? other, double t) => this;
+}
+
 class AppTheme {
   AppTheme._();
 
   // Light colors
   static const Color primaryColor = Color(0xFFE28C71);
   static const Color lightBackgroundColor = Color(0xFFF7F6F4);
+  static const Color lightBackgroundGradientEnd = Color(0xFFEBDDD4);
   static const Color lightCardColor = Color(0xFFFFFFFF);
   static const Color lightTextColor = Color(0xFF333333);
   static const Color lightSecondaryTextColor = Color(0xFF888888);
@@ -16,6 +30,7 @@ class AppTheme {
 
   // Dark colors
   static const Color darkBackgroundColor = Color(0xFF0F0F0F);
+  static const Color darkBackgroundGradientEnd = Color(0xFF1A1312);
   static const Color darkCardColor = Color(0xFF1A1A1A);
   static const Color darkTextColor = Color(0xFFF5F5F5);
   static const Color darkSecondaryTextColor = Color(0xFF8E8E93);
@@ -97,8 +112,9 @@ class AppTheme {
   );
 
   static final ChipThemeData lightChipTheme = ChipThemeData(
-    backgroundColor: lightCardColor,
-    selectedColor: primaryColor,
+    color: WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.selected) ? primaryColor : lightCardColor,
+    ),
     labelStyle: bodyMediumText.copyWith(color: lightTextColor),
     secondaryLabelStyle: bodyMediumText.copyWith(color: lightCardColor),
     showCheckmark: false,
@@ -111,8 +127,9 @@ class AppTheme {
   );
 
   static final ChipThemeData darkChipTheme = ChipThemeData(
-    backgroundColor: darkCardColor,
-    selectedColor: primaryColor,
+    color: WidgetStateProperty.resolveWith(
+      (states) => states.contains(WidgetState.selected) ? primaryColor : darkCardColor,
+    ),
     labelStyle: const TextStyle(color: darkTextColor, fontSize: 14),
     secondaryLabelStyle: const TextStyle(color: darkTextColor, fontSize: 14),
     showCheckmark: false,
@@ -140,11 +157,20 @@ class AppTheme {
       surfaceContainerHigh: lightSegmentedPillColor,
       error: errorColor,
     ),
-    scaffoldBackgroundColor: lightBackgroundColor,
+    scaffoldBackgroundColor: Colors.transparent,
     textTheme: lightTextTheme,
     cardTheme: lightCardTheme,
     chipTheme: lightChipTheme,
     progressIndicatorTheme: lightProgressIndicatorTheme,
+    extensions: [
+      AppGradients(
+        background: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [lightBackgroundColor, lightBackgroundGradientEnd],
+        ),
+      ),
+    ],
   );
 
   static final ThemeData dark = ThemeData(
@@ -158,10 +184,19 @@ class AppTheme {
       surfaceContainerHigh: darkSegmentedPillColor,
       error: errorColor,
     ),
-    scaffoldBackgroundColor: darkBackgroundColor,
+    scaffoldBackgroundColor: Colors.transparent,
     textTheme: darkTextTheme,
     cardTheme: darkCardTheme,
     chipTheme: darkChipTheme,
     progressIndicatorTheme: darkProgressIndicatorTheme,
+    extensions: [
+      AppGradients(
+        background: const LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [darkBackgroundColor, darkBackgroundGradientEnd],
+        ),
+      ),
+    ],
   );
 }

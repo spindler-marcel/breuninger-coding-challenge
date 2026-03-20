@@ -26,6 +26,14 @@ final class FeedInitialLoadingState extends FeedState with EquatableMixin {
     required this.activeFilter,
   });
 
+  FeedInitialLoadingState copyWith({
+    FeedSource? activeSource,
+    GenderFilter? activeFilter,
+  }) => FeedInitialLoadingState(
+    activeSource: activeSource ?? this.activeSource,
+    activeFilter: activeFilter ?? this.activeFilter,
+  );
+
   @override
   List<Object?> get props => [activeSource, activeFilter];
 }
@@ -46,6 +54,20 @@ final class FeedReloadingState extends FeedState with EquatableMixin {
     required this.activeFilter,
     required this.isPullToRefresh,
   });
+
+  FeedReloadingState copyWith({
+    FeedSource? activeSource,
+    GenderFilter? activeFilter,
+    List<FeedItem>? allItems,
+    List<FeedItem>? displayedItems,
+    bool? isPullToRefresh,
+  }) => FeedReloadingState(
+    activeSource: activeSource ?? this.activeSource,
+    activeFilter: activeFilter ?? this.activeFilter,
+    allItems: allItems ?? this.allItems,
+    displayedItems: displayedItems ?? this.displayedItems,
+    isPullToRefresh: isPullToRefresh ?? this.isPullToRefresh,
+  );
 
   @override
   List<Object?> get props => [
@@ -72,6 +94,18 @@ final class FeedSuccessState extends FeedState with EquatableMixin {
     required this.activeFilter,
   });
 
+  FeedSuccessState copyWith({
+    FeedSource? activeSource,
+    GenderFilter? activeFilter,
+    List<FeedItem>? allItems,
+    List<FeedItem>? displayedItems,
+  }) => FeedSuccessState(
+    activeSource: activeSource ?? this.activeSource,
+    activeFilter: activeFilter ?? this.activeFilter,
+    allItems: allItems ?? this.allItems,
+    displayedItems: displayedItems ?? this.displayedItems,
+  );
+
   @override
   List<Object?> get props => [
     allItems,
@@ -93,6 +127,16 @@ final class FeedFailureState extends FeedState with EquatableMixin {
     required this.activeSource,
     required this.activeFilter,
   });
+
+  FeedFailureState copyWith({
+    FeedSource? activeSource,
+    GenderFilter? activeFilter,
+    AppFailure? failure,
+  }) => FeedFailureState(
+    activeSource: activeSource ?? this.activeSource,
+    activeFilter: activeFilter ?? this.activeFilter,
+    failure: failure ?? this.failure,
+  );
 
   @override
   List<Object?> get props => [failure, activeSource, activeFilter];

@@ -3,6 +3,6 @@
     <item>
         <bitmap
             android:gravity="fill"
-            android:src="@drawable/launchscreen_light" />
+            android:src="@drawable/launchscreen_dark" />
     </item>
 </layer-list>

@@ -30,10 +30,7 @@ class FeedCubit extends Cubit<FeedState> {
           activeSource: source, activeFilter: filter, isPullToRefresh: true,
         ));
       case FeedReloadingState s:
-        emit(FeedReloadingState(
-          allItems: s.allItems, displayedItems: s.displayedItems,
-          activeSource: source, activeFilter: filter, isPullToRefresh: true,
-        ));
+        emit(s.copyWith(isPullToRefresh: true));
       default:
         emit(FeedInitialLoadingState(activeSource: source, activeFilter: filter));
     }
@@ -54,10 +51,7 @@ class FeedCubit extends Cubit<FeedState> {
           activeSource: newSource, activeFilter: filter, isPullToRefresh: false,
         ));
       case FeedReloadingState s:
-        emit(FeedReloadingState(
-          allItems: s.allItems, displayedItems: s.displayedItems,
-          activeSource: newSource, activeFilter: filter, isPullToRefresh: false,
-        ));
+        emit(s.copyWith(activeSource: newSource, isPullToRefresh: false));
       default:
         emit(FeedInitialLoadingState(activeSource: newSource, activeFilter: filter));
     }
@@ -65,14 +59,13 @@ class FeedCubit extends Cubit<FeedState> {
   }
 
   void filterByGender(GenderFilter filter) {
-    final currentState = state;
-    if (currentState is! FeedSuccessState) return;
-    emit(FeedSuccessState(
-      allItems: currentState.allItems,
-      displayedItems: _filter.apply(currentState.allItems, filter),
-      activeSource: currentState.activeSource,
-      activeFilter: filter,
-    ));
+    switch (state) {
+      case FeedInitialState(): return;
+      case FeedInitialLoadingState s: emit(s.copyWith(activeFilter: filter));
+      case FeedFailureState s: emit(s.copyWith(activeFilter: filter));
+      case FeedReloadingState s: emit(s.copyWith(activeFilter: filter, displayedItems: _filter.apply(s.allItems, filter)));
+      case FeedSuccessState s: emit(s.copyWith(activeFilter: filter, displayedItems: _filter.apply(s.allItems, filter)));
+    }
   }
 
   Future<void> _loadFeed({

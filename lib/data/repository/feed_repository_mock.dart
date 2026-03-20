@@ -12,26 +12,26 @@ class FeedRepositoryMock implements FeedRepository {
     id: id,
     gender: gender,
     expiresAt: DateTime(2026, 12, 31),
-    headline: "",
-    imageUrl: "",
-    url: "",
+    headline: "Teaser $id",
+    imageUrl: "https://picsum.photos/seed/$id/400/300",
+    url: "https://example.com/teaser/$id",
   );
 
   static SliderSubItemModel _subItem(int id, {String? gender}) =>
       SliderSubItemModel(
         id: id,
         gender: gender,
-        headline: "",
-        imageUrl: "",
-        url: "",
+        headline: "Item $id",
+        imageUrl: "https://picsum.photos/seed/$id/400/300",
+        url: "https://example.com/item/$id",
       );
 
   static SliderModel _slider(int id) => SliderModel(
     id: id,
     subItems: [
-      _subItem(id * 100 + 1, gender: ""),
-      _subItem(id * 100 + 2, gender: ""),
-      _subItem(id * 100 + 3, gender: ""),
+      _subItem(id * 100 + 1, gender: "male"),
+      _subItem(id * 100 + 2, gender: "female"),
+      _subItem(id * 100 + 3, gender: "male"),
     ],
   );
 
@@ -39,16 +39,16 @@ class FeedRepositoryMock implements FeedRepository {
     id: id,
     itemsUrl: "",
     subItems: [
-      _subItem(id * 100 + 10, gender: ""),
-      _subItem(id * 100 + 11, gender: ""),
+      _subItem(id * 100 + 10, gender: "male"),
+      _subItem(id * 100 + 11, gender: "female"),
     ],
   );
 
   static FeedItem _item(int id) {
     if (id % 10 == 0) return _brandSlider(id);
     if (id % 3 == 0) return _slider(id);
-    if (id % 2 == 0) return _teaser(id, gender: "");
-    return _teaser(id, gender: "");
+    if (id % 2 == 0) return _teaser(id, gender: "male");
+    return _teaser(id, gender: "female");
   }
 
   static final _source1 = List.generate(100, (i) => _item(i + 1));

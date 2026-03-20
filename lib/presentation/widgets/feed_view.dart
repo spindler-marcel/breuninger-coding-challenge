@@ -32,29 +32,25 @@ class FeedView extends StatelessWidget {
               child: ReloadingIndicator(),
             ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(96),
-          child: Column(
-            children: [
-              if (isTablet)
-                Row(
-                  children: const [
-                    SizedBox(width: 40),
-                    Expanded(child: SourceToggle()),
-                    Padding(
-                      padding: EdgeInsets.only(right: 24),
-                      child: ReloadingIndicator(),
-                    ),
-                  ],
-                )
-              else
-                const SourceToggle(),
-              const GenderFilterBar(),
-            ],
-          ),
-        ),
       ),
-      body: BlocBuilder<FeedCubit, FeedState>(
+      body: Column(
+        children: [
+          if (isTablet)
+            Row(
+              children: const [
+                SizedBox(width: 40),
+                Expanded(child: SourceToggle()),
+                Padding(
+                  padding: EdgeInsets.only(right: 24),
+                  child: ReloadingIndicator(),
+                ),
+              ],
+            )
+          else
+            const SourceToggle(),
+          const GenderFilterBar(),
+          Expanded(
+            child: BlocBuilder<FeedCubit, FeedState>(
         builder: (context, state) {
           if (state is FeedInitialLoadingState) {
             return const Center(child: CircularProgressIndicator());
@@ -104,6 +100,9 @@ class FeedView extends StatelessWidget {
           }
           return const SizedBox.shrink();
         },
+      ),
+          ),
+        ],
       ),
     );
   }

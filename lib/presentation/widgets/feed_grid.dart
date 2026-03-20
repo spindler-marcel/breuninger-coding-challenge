@@ -1,8 +1,6 @@
 import 'package:coding_challenge/core/gender_filter.dart';
 import 'package:coding_challenge/data/models/feed_models.dart';
-import 'package:coding_challenge/presentation/widgets/adaptive_refresh_scroll_view.dart';
-import 'package:coding_challenge/presentation/widgets/feed_items/animated_feed_item.dart';
-import 'package:coding_challenge/presentation/widgets/feed_items/feed_animation_mixin.dart';
+import 'package:coding_challenge/presentation/widgets/feed_grid_content.dart';
 import 'package:flutter/material.dart';
 
 class FeedGrid extends StatefulWidget {
@@ -22,16 +20,20 @@ class FeedGrid extends StatefulWidget {
 }
 
 class _FeedGridState extends State<FeedGrid>
-    with FeedAnimationMixin<FeedGrid>, SingleTickerProviderStateMixin {
-  GlobalKey<SliverAnimatedGridState> _gridKey = GlobalKey();
-
+    with SingleTickerProviderStateMixin {
   late AnimationController _fadeController;
-  List<FeedItem>? _pendingFadeItems;
+  late List<FeedItem> _displayedItems;
+  late GenderFilter _activeFilter;
+
+  // Holds the latest target state while a fade-out is in progress.
+  List<FeedItem>? _pendingItems;
+  GenderFilter? _pendingFilter;
 
   @override
   void initState() {
     super.initState();
-    initItems(widget.items);
+    _displayedItems = widget.items;
+    _activeFilter = widget.activeFilter;
     _fadeController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 200),
@@ -46,83 +48,52 @@ class _FeedGridState extends State<FeedGrid>
   }
 
   @override
-  void didUpdateWidget(FeedGrid oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.items == widget.items) return;
+  void didUpdateWidget(FeedGrid old) {
+    super.didUpdateWidget(old);
+    if (old.items == widget.items) return;
 
-    if (oldWidget.activeFilter != widget.activeFilter) {
-      _fadeTransition(widget.items);
+    if (old.activeFilter != widget.activeFilter) {
+      _fadeTransition(widget.items, widget.activeFilter);
+    } else if (_pendingItems != null) {
+      // A filter fade is already in progress: update pending items so the
+      // new content is initialized with the latest data when it mounts.
+      _pendingItems = widget.items;
     } else {
-      applyChanges(widget.items);
+      // Same filter, no fade in progress: pass new items to FeedGridContent
+      // for individual insert/remove animations via its didUpdateWidget.
+      setState(() => _displayedItems = widget.items);
     }
   }
 
-  /// Fades the grid out, swaps all items, then fades back in.
-  /// [_pendingFadeItems] always holds the latest target list. If a new filter
-  /// arrives while the fade-out is still running, we skip starting another
-  /// reverse animation and just update the pending items — the in-progress
-  /// fade-out will pick up the latest list when it completes.
-  /// A new [GlobalKey] forces [SliverAnimatedGrid] to rebuild from scratch
-  /// with [initialItemCount], since all items are replaced at once.
-  void _fadeTransition(List<FeedItem> newItems) {
-    _pendingFadeItems = newItems;
+  /// Fades the grid out, swaps content (via [ValueKey] on [FeedGridContent]),
+  /// then fades back in. If a new filter arrives while the fade-out is still
+  /// running, only the pending target is updated — the in-progress animation
+  /// picks up the latest state when it completes.
+  void _fadeTransition(List<FeedItem> newItems, GenderFilter newFilter) {
+    _pendingItems = newItems;
+    _pendingFilter = newFilter;
     if (_fadeController.isAnimating && _fadeController.velocity < 0) return;
 
     _fadeController.reverse().then((_) {
-      if (!mounted || _pendingFadeItems == null) return;
+      if (!mounted || _pendingItems == null) return;
       setState(() {
-        currentItems = List.of(_pendingFadeItems!);
-        _pendingFadeItems = null;
-        _gridKey = GlobalKey();
+        _displayedItems = List.of(_pendingItems!);
+        _activeFilter = _pendingFilter!;
+        _pendingItems = null;
+        _pendingFilter = null;
       });
       _fadeController.forward();
     });
   }
 
   @override
-  void insertAnimatedItem(int index, Duration duration) {
-    _gridKey.currentState?.insertItem(index, duration: duration);
-  }
-
-  @override
-  void removeAnimatedItem(
-    int index,
-    Widget Function(BuildContext, Animation<double>) builder,
-    Duration duration,
-  ) {
-    _gridKey.currentState?.removeItem(index, builder, duration: duration);
-  }
-
-  @override
-  Widget buildRemovedItem(FeedItem item, Animation<double> animation) {
-    return AnimatedFeedItem(item: item, animation: animation);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final bottomPadding = MediaQuery.paddingOf(context).bottom;
-
     return FadeTransition(
       opacity: _fadeController,
-      child: AdaptiveRefreshScrollView(
+      child: FeedGridContent(
+        key: ValueKey(_activeFilter),
+        items: _displayedItems,
         onRefresh: widget.onRefresh,
-        slivers: [
-          SliverPadding(
-            padding: EdgeInsets.only(top: 8, bottom: 8 + bottomPadding),
-            sliver: SliverAnimatedGrid(
-              key: _gridKey,
-              gridDelegate: const SliverGridDelegateWithMaxCrossAxisExtent(
-                maxCrossAxisExtent: 400,
-                mainAxisExtent: 290,
-              ),
-              initialItemCount: currentItems.length,
-              itemBuilder: (context, index, animation) => AnimatedFeedItem(
-                item: currentItems[index],
-                animation: animation,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
