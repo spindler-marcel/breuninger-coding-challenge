@@ -1,9 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "WebFetch(domain:gist.githubusercontent.com)",
-      "WebFetch(domain:gist.github.com)",
-      "WebFetch(domain:pub.dev)"
-    ]
-  }
-}

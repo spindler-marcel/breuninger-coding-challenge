@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:coding_challenge/presentation/feed_dimensions.dart';
 import 'package:coding_challenge/data/models/feed_models.dart';
 import 'package:flutter/material.dart';
@@ -40,12 +39,12 @@ class SliderSubItemPage extends StatelessWidget {
                   child: child,
                 );
               },
-              child: CachedNetworkImage(
-                  imageUrl: subItem.imageUrl ?? "",
+              child: Image.network(
+                  subItem.imageUrl ?? "",
                   fit: BoxFit.cover,
-                  placeholder: (context, url) =>
-                      const Center(child: CircularProgressIndicator()),
-                  errorWidget: (context, url, error) =>
+                  loadingBuilder: (context, child, loadingProgress) =>
+                      loadingProgress == null ? child : const Center(child: CircularProgressIndicator()),
+                  errorBuilder: (context, error, stackTrace) =>
                       const Icon(Icons.broken_image),
                 ),
             ),

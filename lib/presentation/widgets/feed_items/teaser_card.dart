@@ -1,4 +1,3 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:coding_challenge/presentation/feed_dimensions.dart';
 import 'package:coding_challenge/data/models/feed_models.dart';
 import 'package:flutter/material.dart';
@@ -19,13 +18,13 @@ class TeaserCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            CachedNetworkImage(
-              imageUrl: teaser.imageUrl ?? "",
+            Image.network(
+              teaser.imageUrl ?? "",
               height: 200,
               fit: BoxFit.cover,
-              placeholder: (context, url) =>
-                  const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
-              errorWidget: (context, url, error) =>
+              loadingBuilder: (context, child, loadingProgress) =>
+                  loadingProgress == null ? child : const SizedBox(height: 200, child: Center(child: CircularProgressIndicator())),
+              errorBuilder: (context, error, stackTrace) =>
                   const SizedBox(height: 200, child: Icon(Icons.broken_image)),
             ),
             if (teaser.headline != null)

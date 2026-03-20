@@ -18,7 +18,6 @@ dependencies:
   flutter_bloc: ^9.0.0
   dio: ^5.9.2
   equatable: ^2.0.8
-  cached_network_image: ^3.4.1
   url_launcher: ^6.3.0
 
 dev_dependencies:
